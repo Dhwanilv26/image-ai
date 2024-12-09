@@ -16,7 +16,7 @@ export interface HintProps{
 
 export const Hint=(
     {
-     label,children,side,align,sideOffset,alignOffset   
+     label,children,side,sideOffset,alignOffset   
     }:HintProps
 )=>{
     return (

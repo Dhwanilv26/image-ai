@@ -16,6 +16,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Image AI",
   description: "Your personalised canva clone",
+  icons:{
+    icon:"/favicon.ico"
+  }
 };
 
 export default function RootLayout({

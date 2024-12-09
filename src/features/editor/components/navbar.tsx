@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Logo } from './logo';
 import { CiFileOn } from 'react-icons/ci';
 import { Hint } from '@/components/hint';
+import { ActiveTool } from '../types';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -12,7 +14,14 @@ import {
 import { ChevronDown, Download, MousePointerClick, Redo2, Undo2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { BsCloudCheck } from 'react-icons/bs';
-export const Navbar = () => {
+
+interface NavbarProps{
+    activeTool:ActiveTool;
+    onChangeActiveTool:(tool:ActiveTool)=>void;
+    
+}
+export const Navbar = ({activeTool,onChangeActiveTool}:NavbarProps) => {
+
   return (
     <nav className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b lg:pl-[34px]">
       <Logo />
@@ -46,8 +55,8 @@ export const Navbar = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {}}
-            className=""
+            onClick={() => {onChangeActiveTool('select')}}
+            className={cn(activeTool==='select' && 'bg-gray-100')}
             // todo : add dynamic classname
           >
             <MousePointerClick className="size-4" />
