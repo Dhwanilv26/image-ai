@@ -1,11 +1,7 @@
-import { Button } from "@/components/ui/button";
-
 export default function Home() {
   return (
-    <div>
-      <Button
-      size="sm"
-      variant="destructive">Click me</Button>
+    <div className="min-h-screen flex items-center justify-center">
+      Home Page
     </div>
   );
 }
