@@ -22,12 +22,15 @@ export const Editor = () => {
 
   // sif init change hua to hi re render.. and usecallback mtlb no rendering bcz init is cached over there
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 h-[calc(100%-124px)] bg-muted" ref={containerRef}>
+   
+    <div className="h-full flex flex-col ">
+      <div 
+      className="flex-1 h-[calc(100%-124px)] bg-muted " 
+      ref={containerRef}>
         <canvas ref={canvasRef}  />
       </div>
+      </div>
     
-    </div>
   );
   
 };

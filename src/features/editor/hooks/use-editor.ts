@@ -4,6 +4,7 @@ import { fabric } from 'fabric';
 import { useCallback } from 'react';
 
 export const useEditor = () => {
+ 
   const init = useCallback(
     ({
       initialCanvas,
@@ -13,6 +14,15 @@ export const useEditor = () => {
       initialContainer: HTMLDivElement;
     }) => {
 
+      fabric.Object.prototype.set({
+        cornerColor:'#FFF',
+        cornerStyle:'circle',
+        borderColor:'#3b82f6',
+        borderScaleFactor:1.5,
+        transparentCorners:false,
+        borderOpacityWhenMoving:1,
+        cornerStrokeColor:'#3b83f6'
+      })
       const initialWorkSpace=new fabric.Rect({
         width:900,
         height:1200,
@@ -34,9 +44,22 @@ export const useEditor = () => {
 
       // other elements outside the workspace wont be visible
       initialCanvas.clipPath=initialWorkSpace
+
+
+      const test=new fabric.Rect({
+        height:100,
+        width:100,
+        fill:'black'
+      })
+    
+      initialCanvas.add(test);
+      initialCanvas.centerObject(test);
     },
+
+   
     [],
   );
+  
 
   return { init };
 };
