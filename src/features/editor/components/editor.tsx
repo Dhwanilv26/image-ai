@@ -14,12 +14,17 @@ export const Editor = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    
     const canvas = new fabric.Canvas(canvasRef.current, {
       controlsAboveOverlay: true,
       preserveObjectStacking: true,
     });
 
     init({ initialCanvas: canvas, initialContainer: containerRef.current! });
+
+    return ()=>{
+      canvas.dispose(); 
+    }
   }, [init]);
 
   // sif init change hua to hi re render.. and usecallback mtlb no rendering bcz init is cached over there
