@@ -1,9 +1,17 @@
 // creating a hook to use the editor
 // usecallback caches the interactions allowing less re rendering
 import { fabric } from 'fabric';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useAutoResize } from './use-auto-resize';
 
 export const useEditor = () => {
+
+  const [canvas,setCanvas]=useState<fabric.Canvas| null>(null);
+  const[container,setContainer]=useState<HTMLDivElement | null>(null);
+
+  useAutoResize({
+    canvas,container
+  });
  
   const init = useCallback(
     ({
@@ -45,6 +53,8 @@ export const useEditor = () => {
       // other elements outside the workspace wont be visible
       initialCanvas.clipPath=initialWorkSpace
 
+      setCanvas(initialCanvas);
+      setContainer(initialContainer);
 
       const test=new fabric.Rect({
         height:100,
