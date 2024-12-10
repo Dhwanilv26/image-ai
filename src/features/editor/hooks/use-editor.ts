@@ -1,18 +1,123 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // creating a hook to use the editor
 // usecallback caches the interactions allowing less re rendering
 import { fabric } from 'fabric';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useAutoResize } from './use-auto-resize';
+import {
+  BuildEditorProps,
+  CIRCLE_OPTIONS,
+  DIAMOND_OPTIONS,
+  Editor,
+  RECTANGLE_OPTIONS,
+  TRIANGLE_OPTIONS,
+} from '../types';
+
+const buildEditor = ({ canvas }: BuildEditorProps): Editor => {
+  const getWorkSpace = () => {
+    return canvas.getObjects().find((object) => object.name === 'clip');
+  };
+  const center = (object: fabric.Object) => {
+    const workspace = getWorkSpace();
+
+    const center = workspace?.getCenterPoint();
+
+    if (!center) return;
+
+    // @ts-ignore
+    canvas._centerObject(object, center);
+  };
+
+  const addToCanvas = (object: fabric.Object) => {
+    center(object);
+    canvas.add(object);
+    canvas.setActiveObject(object);
+  };
+  return {
+    // spreading allows dynamic updates here
+    addCircle: () => {
+      const object = new fabric.Circle({
+        ...CIRCLE_OPTIONS,
+      });
+      // to reduce undo and redo history states.. the roder matters
+      addToCanvas(object);
+    },
+
+    addSoftRectangle: () => {
+      const object = new fabric.Rect({
+        ...RECTANGLE_OPTIONS,
+        rx: 50,
+        ry: 50,
+      });
+      addToCanvas(object);
+    },
+
+    addRectangle: () => {
+      const object = new fabric.Rect({
+        ...RECTANGLE_OPTIONS,
+      });
+      addToCanvas(object);
+    },
+    addTriangle: () => {
+      const object = new fabric.Triangle({
+        ...TRIANGLE_OPTIONS,
+      });
+      addToCanvas(object);
+    },
+    addInverseTriangle: () => {
+      const HEIGHT = 400;
+      const WIDTH = 400;
+
+      const object = new fabric.Polygon(
+        [
+          { x: 0, y: 0 },
+          { x: WIDTH, y: 0 },
+          { x: WIDTH / 2, y: HEIGHT },
+        ],
+        {
+          ...TRIANGLE_OPTIONS,
+        },
+      );
+      addToCanvas(object);
+    },
+
+    addDiamond: () => {
+      const HEIGHT = 400;
+      const WIDTH = 400;
+
+      const object = new fabric.Polygon(
+        [
+          { x: WIDTH / 2, y: 0 },
+          { x: WIDTH, y: HEIGHT / 2 },
+          { x: WIDTH/2, y: HEIGHT },
+          { x: 0, y: HEIGHT / 2 },
+        ],
+        {
+          ...DIAMOND_OPTIONS,
+        },
+      );
+      addToCanvas(object);
+    },
+  };
+};
 
 export const useEditor = () => {
-
-  const [canvas,setCanvas]=useState<fabric.Canvas| null>(null);
-  const[container,setContainer]=useState<HTMLDivElement | null>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   useAutoResize({
-    canvas,container
+    canvas,
+    container,
   });
- 
+
+  const editor = useMemo(() => {
+    if (canvas) {
+      return buildEditor({ canvas });
+    }
+
+    return undefined;
+  }, [canvas]);
+
   const init = useCallback(
     ({
       initialCanvas,
@@ -21,28 +126,27 @@ export const useEditor = () => {
       initialCanvas: fabric.Canvas;
       initialContainer: HTMLDivElement;
     }) => {
-
       fabric.Object.prototype.set({
-        cornerColor:'#FFF',
-        cornerStyle:'circle',
-        borderColor:'#3b82f6',
-        borderScaleFactor:1.5,
-        transparentCorners:false,
-        borderOpacityWhenMoving:1,
-        cornerStrokeColor:'#3b83f6'
-      })
-      const initialWorkSpace=new fabric.Rect({
-        width:900,
-        height:1200,
-        name:'clip',
-        fill:'white',
-        selectable:false,
-        hasControls:false,
-        shadow:new fabric.Shadow({
-          color:"rgba(0,0,0,0.8)",
-          blur:5
-        })
-      })
+        cornerColor: '#FFF',
+        cornerStyle: 'circle',
+        borderColor: '#3b82f6',
+        borderScaleFactor: 1.5,
+        transparentCorners: false,
+        borderOpacityWhenMoving: 1,
+        cornerStrokeColor: '#3b83f6',
+      });
+      const initialWorkSpace = new fabric.Rect({
+        width: 900,
+        height: 1200,
+        name: 'clip',
+        fill: 'white',
+        selectable: false,
+        hasControls: false,
+        shadow: new fabric.Shadow({
+          color: 'rgba(0,0,0,0.8)',
+          blur: 5,
+        }),
+      });
 
       initialCanvas.setWidth(initialContainer.offsetWidth);
       initialCanvas.setHeight(initialContainer.offsetHeight);
@@ -51,25 +155,14 @@ export const useEditor = () => {
       initialCanvas.centerObject(initialWorkSpace);
 
       // other elements outside the workspace wont be visible
-      initialCanvas.clipPath=initialWorkSpace
+      initialCanvas.clipPath = initialWorkSpace;
 
       setCanvas(initialCanvas);
       setContainer(initialContainer);
-
-      const test=new fabric.Rect({
-        height:100,
-        width:100,
-        fill:'black'
-      })
-    
-      initialCanvas.add(test);
-      initialCanvas.centerObject(test);
     },
 
-   
     [],
   );
-  
 
-  return { init };
+  return { init, editor };
 };
