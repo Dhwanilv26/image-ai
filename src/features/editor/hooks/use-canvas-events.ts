@@ -4,27 +4,28 @@ interface UseCanvasEventsProps {
   canvas: fabric.Canvas | null;
 
   setSelectedObjects: (objects: fabric.Object[]) => void;
+
+  clearSelectionCallback?: () => void;
 }
 
 export const useCanvasEvents = ({
   canvas,
   setSelectedObjects,
+  clearSelectionCallback,
 }: UseCanvasEventsProps) => {
   useEffect(() => {
     if (canvas) {
       canvas.on('selection:created', (e) => {
-        console.log('selection:created');
         setSelectedObjects(e.selected || []);
       });
 
       canvas.on('selection:updated', (e) => {
-        console.log('selection:updated');
         setSelectedObjects(e.selected || []);
       });
 
       canvas.on('selection:cleared', () => {
-        console.log('selection:cleared');
         setSelectedObjects([]);
+        clearSelectionCallback?.();
       });
     }
 
@@ -35,6 +36,6 @@ export const useCanvasEvents = ({
         canvas.off('selection:cleared');
       }
     };
-  }, [canvas, setSelectedObjects]);
+  }, [canvas, setSelectedObjects, clearSelectionCallback]);
   // no need of setselectedobjects in useeffect .. as it used in useState
 };
