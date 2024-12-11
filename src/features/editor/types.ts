@@ -3,6 +3,27 @@ import { ITextboxOptions } from 'fabric/fabric-impl';
 
 import * as material from 'material-colors';
 
+export const fonts = [
+  'Arial',
+  'Arial Black',
+  'Verdana',
+  'Helvitica',
+  'Tahoma',
+  'Times New Roman',
+  'Trebuchet MS',
+  'Georgia',
+  'Garamond',
+  'Courier New',
+  'Brush Script MT',
+  'Palatino',
+  'Bookman',
+  'Comic Sans MS',
+  'Impact',
+  'Lucida Sans Unicode',
+  'Geneva',
+  'Lucida Console',
+];
+
 export const selectionDependentTools = [
   'fill',
   'font',
@@ -65,10 +86,14 @@ export type BuildEditorProps = {
   setFillColor: (value: string) => void;
   setStrokeColor: (value: string) => void;
   setStrokeWidth: (value: number) => void;
+  fontFamily: string;
+  setFontFamily: (value: string) => void;
 };
 
 // ensuring proper type and name safety
 export interface Editor {
+  getActiveFontFamily: () => string;
+  changeFontFamily: (value: string) => void;
   addText: (value: string, options?: ITextboxOptions) => void;
   getActiveOpacity: () => number;
   changeOpacity: (value: number) => void;
@@ -98,7 +123,7 @@ export const STROKE_WIDTH = 2;
 export const STROKE_DASH_ARRAY = [];
 export const FONT_FAMILY = 'Arial';
 export const FONT_SIZE = 32;
-export const FONT_WEIGHT=400;
+export const FONT_WEIGHT = 400;
 
 export const TEXT_OPTIONS = {
   type: 'textbox',
@@ -107,7 +132,7 @@ export const TEXT_OPTIONS = {
   fill: FILL_COLOR,
   fontSize: FONT_SIZE,
   fontFamily: FONT_FAMILY,
-  fontWeight:FONT_WEIGHT
+  fontWeight: FONT_WEIGHT,
 };
 
 export const CIRCLE_OPTIONS = {
