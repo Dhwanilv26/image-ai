@@ -11,35 +11,37 @@ import { ActiveTool, selectionDependentTools } from '../types';
 import { ShapeSidebar } from './shape-sidebar';
 import { FillColorSidebar } from './fill-color-sidebar';
 import { StrokeColorSidebar } from './stroke-color-sidebar';
+import { StrokeWidthSidebar } from './stroke-width-sidebar';
 export const Editor = () => {
   const [activeTool, setActiveTool] = useState<ActiveTool>('select');
 
-  const onChangeActiveTool = useCallback((tool: ActiveTool) => {
-    if (tool === activeTool) {
-      return setActiveTool('select');
-    }
+  const onChangeActiveTool = useCallback(
+    (tool: ActiveTool) => {
+      if (tool === activeTool) {
+        return setActiveTool('select');
+      }
 
-    if(tool==='draw'){
-      // todo : enable draw mode
-    }
+      if (tool === 'draw') {
+        // todo : enable draw mode
+      }
 
-    if(activeTool==='draw'){
-      // todo : disable draw mode
-    }
+      if (activeTool === 'draw') {
+        // todo : disable draw mode
+      }
 
-    setActiveTool(tool);
-  }, [activeTool]);
+      setActiveTool(tool);
+    },
+    [activeTool],
+  );
 
-  const onClearSelection=useCallback(()=>{
-
-    if(selectionDependentTools.includes(activeTool)){
+  const onClearSelection = useCallback(() => {
+    if (selectionDependentTools.includes(activeTool)) {
       setActiveTool('select');
     }
+  }, [activeTool]);
 
-  },[activeTool])
-
-  const { init,editor } = useEditor({
-    clearSelectionCallback:onClearSelection
+  const { init, editor } = useEditor({
+    clearSelectionCallback: onClearSelection,
   });
 
   const canvasRef = useRef(null);
@@ -61,40 +63,45 @@ export const Editor = () => {
   // sif init change hua to hi re render.. and usecallback mtlb no rendering bcz init is cached over there
   return (
     <div className="h-full flex flex-col ">
-      <Navbar
-       activeTool={activeTool}
-       onChangeActiveTool={onChangeActiveTool} />
+      <Navbar activeTool={activeTool} onChangeActiveTool={onChangeActiveTool} />
       <div className="absolute h-[calc(100%-68px)] w-full top-[68px] flex">
         {/* using this div to prevent overflow and constant flickering issues */}
 
         <Sidebar
-        activeTool={activeTool}
-        onChangeActiveTool={onChangeActiveTool} />
+          activeTool={activeTool}
+          onChangeActiveTool={onChangeActiveTool}
+        />
 
         <ShapeSidebar
-        editor={editor}
-        activeTool={activeTool}
-        onChangeActiveTool={onChangeActiveTool}
-        />
-
-        <FillColorSidebar
-        editor={editor}
-        activeTool={activeTool}
-        onChangeActiveTool={onChangeActiveTool}
-        />
-         <StrokeColorSidebar
-        editor={editor}
-        activeTool={activeTool}
-        onChangeActiveTool={onChangeActiveTool}
-        />
-
-
-        <main className="bg-muted flex-1 overflow-auto relative flex flex-col">
-          <Toolbar 
           editor={editor}
           activeTool={activeTool}
           onChangeActiveTool={onChangeActiveTool}
-          key={JSON.stringify(editor?.canvas.getActiveObject())}/>
+        />
+
+        <FillColorSidebar
+          editor={editor}
+          activeTool={activeTool}
+          onChangeActiveTool={onChangeActiveTool}
+        />
+        <StrokeColorSidebar
+          editor={editor}
+          activeTool={activeTool}
+          onChangeActiveTool={onChangeActiveTool}
+        />
+
+        <StrokeWidthSidebar
+          editor={editor}
+          activeTool={activeTool}
+          onChangeActiveTool={onChangeActiveTool}
+        />
+
+        <main className="bg-muted flex-1 overflow-auto relative flex flex-col">
+          <Toolbar
+            editor={editor}
+            activeTool={activeTool}
+            onChangeActiveTool={onChangeActiveTool}
+            key={JSON.stringify(editor?.canvas.getActiveObject())}
+          />
           {/* changing the toolbar everytime the selected object changes */}
           <div
             className="flex-1 h-[calc(100%-124px)] bg-muted "
