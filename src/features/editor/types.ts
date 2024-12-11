@@ -91,7 +91,12 @@ export type BuildEditorProps = {
 };
 
 // ensuring proper type and name safety
+
+
+// these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
+  changeFontWeight: (value: number) => void;
+  getActiveFontWeight: () => number;
   getActiveFontFamily: () => string;
   changeFontFamily: (value: string) => void;
   addText: (value: string, options?: ITextboxOptions) => void;

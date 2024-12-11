@@ -13,6 +13,7 @@ import {
   EditorHookProps,
   FILL_COLOR,
   FONT_FAMILY,
+  FONT_WEIGHT,
   RECTANGLE_OPTIONS,
   STROKE_COLOR,
   STROKE_DASH_ARRAY,
@@ -57,6 +58,30 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+
+    changeFontWeight:(value:number)=>{
+
+      canvas.getActiveObjects().forEach((object)=>{
+        if(isTextType(object.type)){
+          // @ts-ignore
+          object.set({fontWeight:value});
+        }
+      })
+
+      canvas.renderAll();
+    },
+    getActiveFontWeight:()=>{
+
+      const selectedObject=selectedObjects[0];
+
+      if(!selectedObject){
+        return FONT_WEIGHT;
+      }
+      // @ts-ignore , faulty ts library (fontfamily exists already);
+      const value=selectedObject.get("fontWeight") || FONT_WEIGHT;
+
+      return value;
+    },
 
     getActiveFontFamily:()=>{
 

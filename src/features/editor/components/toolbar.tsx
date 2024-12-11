@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ActiveTool, Editor } from '../types';
+import { ActiveTool, Editor, FONT_WEIGHT } from '../types';
 import { Hint } from '@/components/hint';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,9 @@ import { ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
 import { BsBorderWidth } from 'react-icons/bs';
 import { RxTransparencyGrid } from 'react-icons/rx';
 import { isTextType } from '../utils';
+import { FaBold } from 'react-icons/fa6';
+
+import { useState } from 'react';
 interface ToolbarProps {
   editor: Editor | undefined;
   activeTool: ActiveTool;
@@ -19,6 +22,8 @@ export const Toolbar = ({
   activeTool,
   onChangeActiveTool,
 }: ToolbarProps) => {
+
+
   const fillColor = editor?.getActiveFillColor();
   const strokeColor = editor?.getActiveStrokeColor();
 
@@ -28,6 +33,28 @@ export const Toolbar = ({
   const fontFamily = editor?.getActiveFontFamily();
 
   const isText = isTextType(selectedObjectType);
+
+  const initialFontWeight = editor?.getActiveFontWeight() || FONT_WEIGHT;
+
+  const [properties,setProperties]=useState({
+    fontWeight:initialFontWeight
+  })
+
+  const toggleBold = () => {
+    const selectedObject = editor?.selectedObjects[0];
+
+    if (!selectedObject) {
+      return;
+    }
+
+    const newValue = properties.fontWeight > 500 ? 500 : 700;
+
+    editor?.changeFontWeight(newValue);
+    setProperties((current)=>({
+      ...current,
+      fontWeight:newValue
+    }))
+  };
 
   if (editor?.selectedObjects.length === 0) {
     return (
@@ -107,6 +134,20 @@ export const Toolbar = ({
         </div>
       )}
 
+      {isText && (
+        <div className="flex items-center h-full justify-center">
+          <Hint label="Bold" side="bottom" sideOffset={5}>
+            <Button
+              onClick={() => toggleBold()}
+              size="icon"
+              variant="ghost"
+              className={cn(properties.fontWeight > 500 && 'bg-gray-100')}
+            >
+              <FaBold />
+            </Button>
+          </Hint>
+        </div>
+      )}
       <div className="flex items-center h-full justify-center">
         <Hint label="Bring forward" side="bottom" sideOffset={5}>
           <Button
