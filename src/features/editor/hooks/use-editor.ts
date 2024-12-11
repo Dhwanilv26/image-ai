@@ -31,7 +31,7 @@ const buildEditor = ({
   setStrokeWidth,
   selectedObjects,
   strokeDashArray,
-  setStrokeDashArray
+  setStrokeDashArray,
 }: BuildEditorProps): Editor => {
   const getWorkSpace = () => {
     return canvas.getObjects().find((object) => object.name === 'clip');
@@ -53,6 +53,27 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+    bringForward: () => {
+      canvas.getActiveObjects().forEach((object) => {
+        canvas.bringForward(object);
+      });
+
+      canvas.renderAll();
+
+      const workspace = getWorkSpace();
+      workspace?.sendToBack();
+    },
+    sendBackwards: () => {
+      canvas.getActiveObjects().forEach((object) => {
+        canvas.sendBackwards(object);
+      });
+
+      canvas.renderAll();
+
+      const workspace = getWorkSpace();
+      workspace?.sendToBack();
+    },
+
     changeFillColor: (value: string) => {
       setFillColor(value); // this is in the useState
 
@@ -103,7 +124,7 @@ const buildEditor = ({
         fill: fillColor,
         stroke: strokeColor,
         strokeWidth: strokeWidth,
-        strokeDashArray:strokeDashArray
+        strokeDashArray: strokeDashArray,
       });
       // to reduce undo and redo history states.. the roder matters
       addToCanvas(object);
@@ -117,7 +138,7 @@ const buildEditor = ({
         fill: fillColor,
         stroke: strokeColor,
         strokeWidth: strokeWidth,
-        strokeDashArray:strokeDashArray
+        strokeDashArray: strokeDashArray,
       });
       addToCanvas(object);
     },
@@ -128,7 +149,7 @@ const buildEditor = ({
         fill: fillColor,
         stroke: strokeColor,
         strokeWidth: strokeWidth,
-        strokeDashArray:strokeDashArray
+        strokeDashArray: strokeDashArray,
       });
       addToCanvas(object);
     },
@@ -138,7 +159,7 @@ const buildEditor = ({
         fill: fillColor,
         stroke: strokeColor,
         strokeWidth: strokeWidth,
-        strokeDashArray:strokeDashArray
+        strokeDashArray: strokeDashArray,
       });
       addToCanvas(object);
     },
@@ -157,7 +178,7 @@ const buildEditor = ({
           fill: fillColor,
           stroke: strokeColor,
           strokeWidth: strokeWidth,
-          strokeDashArray:strokeDashArray
+          strokeDashArray: strokeDashArray,
         },
       );
       addToCanvas(object);
@@ -179,7 +200,7 @@ const buildEditor = ({
           fill: fillColor,
           stroke: strokeColor,
           strokeWidth: strokeWidth,
-          strokeDashArray:strokeDashArray
+          strokeDashArray: strokeDashArray,
         },
       );
       addToCanvas(object);
