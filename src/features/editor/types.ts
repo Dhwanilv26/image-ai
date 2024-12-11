@@ -68,9 +68,11 @@ export type BuildEditorProps = {
 
 // ensuring proper type and name safety
 export interface Editor {
+  getActiveOpacity: () => number;
+  changeOpacity: (value: number) => void;
   canvas: fabric.Canvas;
-  bringForward:()=>void;
-  sendBackwards:()=>void;
+  bringForward: () => void;
+  sendBackwards: () => void;
   getActiveFillColor: () => string;
   getActiveStrokeColor: () => string;
   getActiveStrokeWidth: () => number;
