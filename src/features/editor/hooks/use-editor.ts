@@ -60,7 +60,12 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+    delete: () => {
+      canvas.getActiveObjects().forEach((object) => canvas.remove(object));
 
+      canvas.discardActiveObject();
+      canvas.renderAll();
+    },
     getActiveFontSize: () => {
       const selectedObject = selectedObjects[0];
 
@@ -71,7 +76,7 @@ const buildEditor = ({
       // @ts-ignore
       const value = selectedObject.get('fontSize') || FONT_SIZE;
 
-      if(Number.isNaN(value)) return 0;
+      if (Number.isNaN(value)) return 0;
       return value;
     },
 
@@ -80,7 +85,7 @@ const buildEditor = ({
         if (isTextType(object.type)) {
           // @ts-ignore
           object.set({ fontSize: value });
-          object.setCoords()
+          object.setCoords();
         }
       });
 
@@ -91,11 +96,11 @@ const buildEditor = ({
       const selectedObject = selectedObjects[0];
 
       if (!selectedObject) {
-        return "left";
+        return 'left';
       }
 
       // @ts-ignore
-      const value = selectedObject.get('textAlign') || "left";
+      const value = selectedObject.get('textAlign') || 'left';
 
       return value;
     },
