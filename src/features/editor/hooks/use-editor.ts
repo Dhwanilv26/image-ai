@@ -23,6 +23,7 @@ import {
 } from '../types';
 import { useCanvasEvents } from './use-canvas-events';
 import { isTextType } from '../utils';
+import { ITextboxOptions } from 'fabric/fabric-impl';
 
 const buildEditor = ({
   canvas,
@@ -59,54 +60,137 @@ const buildEditor = ({
   };
   return {
 
-    changeFontWeight:(value:number)=>{
+    getActiveTextAlign: () => {
+      const selectedObject = selectedObjects[0];
 
-      canvas.getActiveObjects().forEach((object)=>{
-        if(isTextType(object.type)){
+      if (!selectedObject) {
+        return "left";
+      }
+
+      // @ts-ignore
+      const value = selectedObject.get('textAlign') || "left";
+
+      return value;
+    },
+    changeTextAlign: (value: string) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
           // @ts-ignore
-          object.set({fontWeight:value});
+          object.set({ textAlign: value });
         }
-      })
+      });
 
       canvas.renderAll();
     },
-    getActiveFontWeight:()=>{
+    getActiveFontUnderline: () => {
+      const selectedObject = selectedObjects[0];
 
-      const selectedObject=selectedObjects[0];
+      if (!selectedObject) {
+        return false;
+      }
 
-      if(!selectedObject){
+      // @ts-ignore
+      const value = selectedObject.get('underline') || false;
+
+      return value;
+    },
+    changeFontUnderline: (value: boolean) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
+          // @ts-ignore
+          object.set({ underline: value });
+        }
+      });
+
+      canvas.renderAll();
+    },
+
+    getActiveFontLinethrough: () => {
+      const selectedObject = selectedObjects[0];
+
+      if (!selectedObject) {
+        return false;
+      }
+
+      // @ts-ignore
+      const value = selectedObject.get('linethrough') || false;
+
+      return value;
+    },
+    changeFontLinethrough: (value: boolean) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
+          // @ts-ignore
+          object.set({ linethrough: value });
+        }
+      });
+
+      canvas.renderAll();
+    },
+    getActiveFontStyle: () => {
+      const selectedObject = selectedObjects[0];
+
+      if (!selectedObject) {
+        return 'normal';
+      }
+
+      // @ts-ignore
+      const value = selectedObject.get('fontStyle') || 'normal';
+
+      return value;
+    },
+    changeFontStyle: (value: string) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
+          // @ts-ignore
+          object.set({ fontStyle: value });
+        }
+      });
+
+      canvas.renderAll();
+    },
+    changeFontWeight: (value: number) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
+          // @ts-ignore
+          object.set({ fontWeight: value });
+        }
+      });
+
+      canvas.renderAll();
+    },
+    getActiveFontWeight: () => {
+      const selectedObject = selectedObjects[0];
+
+      if (!selectedObject) {
         return FONT_WEIGHT;
       }
       // @ts-ignore , faulty ts library (fontfamily exists already);
-      const value=selectedObject.get("fontWeight") || FONT_WEIGHT;
+      const value = selectedObject.get('fontWeight') || FONT_WEIGHT;
 
       return value;
     },
 
-    getActiveFontFamily:()=>{
+    getActiveFontFamily: () => {
+      const selectedObject = selectedObjects[0];
 
-      const selectedObject=selectedObjects[0];
-
-      if(!selectedObject){
+      if (!selectedObject) {
         return fontFamily;
       }
       // @ts-ignore , faulty ts library (fontfamily exists already);
-      const value=selectedObject.get("fontFamily") || fontFamily;
+      const value = selectedObject.get('fontFamily') || fontFamily;
 
       return value;
     },
 
-    changeFontFamily:(value:string)=>{
-
+    changeFontFamily: (value: string) => {
       setFontFamily(value);
-      canvas.getActiveObjects().forEach((object)=>{
-        if(isTextType(object.type))
-        {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
           // @ts-ignore
-          object.set({fontFamily:value});
+          object.set({ fontFamily: value });
         }
-      
-      })
+      });
       canvas.renderAll();
     },
     addText: (value, options) => {
