@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ActiveTool, Editor, FONT_WEIGHT } from '../types';
+import { ActiveTool, Editor, FONT_SIZE, FONT_WEIGHT } from '../types';
 import { Hint } from '@/components/hint';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown, ChevronDown, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import {
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+} from 'lucide-react';
 import { BsBorderWidth } from 'react-icons/bs';
 import { RxTransparencyGrid } from 'react-icons/rx';
 import { isTextType } from '../utils';
@@ -16,6 +23,7 @@ import {
 } from 'react-icons/fa6';
 
 import { useState } from 'react';
+import { FontSizeInput } from './font-size-input';
 interface ToolbarProps {
   editor: Editor | undefined;
   activeTool: ActiveTool;
@@ -35,6 +43,7 @@ export const Toolbar = ({
   const initialFontLinethrough = editor?.getActiveFontLinethrough() || false;
   const initialUnderline = editor?.getActiveFontUnderline() || false;
   const initialTextAlign = editor?.getActiveTextAlign() || 'left';
+  const initialFontSize = editor?.getActiveFontSize() || FONT_SIZE;
 
   const selectedObject = editor?.selectedObjects[0];
   const selectedObjectType = editor?.selectedObjects[0]?.type;
@@ -51,8 +60,6 @@ export const Toolbar = ({
       ...current,
       textAlign: value,
     }));
-
-    
   };
 
   const [properties, setProperties] = useState({
@@ -64,7 +71,20 @@ export const Toolbar = ({
     fontLinethrough: initialFontLinethrough,
     fontUnderline: initialUnderline,
     textAlign: initialTextAlign,
+    fontSize: initialFontSize,
   });
+
+  const onChangeFontSize = (value: number) => {
+    if (!selectedObject) {
+      return;
+    }
+    editor?.changeFontSize(value);
+
+    setProperties((current) => ({
+      ...current,
+      fontSize: value,
+    }));
+  };
 
   const toggleUnderline = () => {
     if (!selectedObject) {
@@ -269,10 +289,10 @@ export const Toolbar = ({
         <div className="flex items-center h-full justify-center">
           <Hint label="Align Left" side="bottom" sideOffset={5}>
             <Button
-              onClick={()=>onChangeTextAlign('left')}
+              onClick={() => onChangeTextAlign('left')}
               size="icon"
               variant="ghost"
-              className={cn(properties.textAlign==='left' && 'bg-gray-100')}
+              className={cn(properties.textAlign === 'left' && 'bg-gray-100')}
             >
               <AlignLeft className="size-4" />
             </Button>
@@ -280,14 +300,14 @@ export const Toolbar = ({
         </div>
       )}
 
-{isText && (
+      {isText && (
         <div className="flex items-center h-full justify-center">
           <Hint label="Align Center" side="bottom" sideOffset={5}>
             <Button
-              onClick={()=>onChangeTextAlign('center')}
+              onClick={() => onChangeTextAlign('center')}
               size="icon"
               variant="ghost"
-              className={cn(properties.textAlign==='center' && 'bg-gray-100')}
+              className={cn(properties.textAlign === 'center' && 'bg-gray-100')}
             >
               <AlignCenter className="size-4" />
             </Button>
@@ -295,18 +315,27 @@ export const Toolbar = ({
         </div>
       )}
 
-        {isText && (
+      {isText && (
         <div className="flex items-center h-full justify-center">
           <Hint label="Align Right" side="bottom" sideOffset={5}>
             <Button
-              onClick={()=>onChangeTextAlign('right')}
+              onClick={() => onChangeTextAlign('right')}
               size="icon"
               variant="ghost"
-              className={cn(properties.textAlign==='right' && 'bg-gray-100')}
+              className={cn(properties.textAlign === 'right' && 'bg-gray-100')}
             >
               <AlignRight className="size-4" />
             </Button>
           </Hint>
+        </div>
+      )}
+
+      {isText && (
+        <div className="flex items-center h-full justify-center">
+          <FontSizeInput
+            value={properties.fontSize}
+            onChange={onChangeFontSize}
+          />
         </div>
       )}
       <div className="flex items-center h-full justify-center">

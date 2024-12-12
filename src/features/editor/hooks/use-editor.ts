@@ -13,6 +13,7 @@ import {
   EditorHookProps,
   FILL_COLOR,
   FONT_FAMILY,
+  FONT_SIZE,
   FONT_WEIGHT,
   RECTANGLE_OPTIONS,
   STROKE_COLOR,
@@ -59,6 +60,32 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+
+    getActiveFontSize: () => {
+      const selectedObject = selectedObjects[0];
+
+      if (!selectedObject) {
+        return FONT_SIZE;
+      }
+
+      // @ts-ignore
+      const value = selectedObject.get('fontSize') || FONT_SIZE;
+
+      if(Number.isNaN(value)) return 0;
+      return value;
+    },
+
+    changeFontSize: (value: number) => {
+      canvas.getActiveObjects().forEach((object) => {
+        if (isTextType(object.type)) {
+          // @ts-ignore
+          object.set({ fontSize: value });
+          object.setCoords()
+        }
+      });
+
+      canvas.renderAll();
+    },
 
     getActiveTextAlign: () => {
       const selectedObject = selectedObjects[0];
