@@ -9,6 +9,8 @@ import { useGetImages } from '@/features/images/api/use-get-images';
 import Link from 'next/link';
 import { AlertTriangle, Loader } from 'lucide-react';
 import Image from 'next/image';
+
+import { UploadButton } from '@/lib/uploadthing';
 interface ImageSidebarProps {
   editor: Editor | undefined;
   activeTool: ActiveTool;
@@ -37,6 +39,20 @@ export const ImageSidebar = ({
         description="Add images to your canvas "
       />
 
+      <div className="p-4 border-b">
+        <UploadButton
+          appearance={{
+            button: 'w-full text-sm font-medium',
+            allowedContent: 'hidden',
+          }}
+          content={{ button: 'Upload Image' }}
+          endpoint="imageUploader"
+          onClientUploadComplete={(res) => {
+            editor?.addImage(res[0].url);
+          }}
+        />
+      </div>
+
       {isLoading && (
         <div className="flex items-center justify-center flex-1">
           <Loader className="size-4 text-muted-foreground animate-spin" />
@@ -58,7 +74,7 @@ export const ImageSidebar = ({
               data.map((image) => {
                 return (
                   <button
-                  onClick={()=>editor?.addImage(image.urls.regular)}
+                    onClick={() => editor?.addImage(image.urls.regular)}
                     key={image.id}
                     className="relative w-full h-[100px] group hover:opacity-75 transition bg-muted rounded-sm overflow-hidden border"
                   >
