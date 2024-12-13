@@ -94,7 +94,8 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
-  delete:()=>void;
+  addImage: (value: string) => void;
+  delete: () => void;
   getActiveFontSize: () => number;
   changeFontSize: (value: number) => void;
   getActiveTextAlign: () => string;
