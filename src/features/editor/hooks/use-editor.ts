@@ -26,8 +26,11 @@ import { useCanvasEvents } from './use-canvas-events';
 import { isTextType } from '../utils';
 import { ITextboxOptions } from 'fabric/fabric-impl';
 import { createFilter } from '@/lib/utils';
+import { useClipboard } from './use-clipboard';
 
 const buildEditor = ({
+  copy,
+  paste,
   canvas,
   fillColor,
   setFillColor,
@@ -61,6 +64,8 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+    onCopy: () => copy(),
+    onPaste: () => paste(),
     changeImageFilter: (value: string) => {
       const objects = canvas.getActiveObjects();
 
@@ -498,6 +503,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
   const [strokeDashArray, setStrokeDashArray] =
     useState<number[]>(STROKE_DASH_ARRAY);
 
+  const { copy, paste } = useClipboard({ canvas });
+
   useAutoResize({
     canvas,
     container,
@@ -511,6 +518,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
   const editor = useMemo(() => {
     if (canvas) {
       return buildEditor({
+        copy,
+        paste,
         canvas,
         fillColor,
         setFillColor,
@@ -528,6 +537,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
 
     return undefined;
   }, [
+    copy,
+    paste,
     canvas,
     fillColor,
     strokeColor,

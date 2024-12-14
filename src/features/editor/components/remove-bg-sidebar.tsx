@@ -70,7 +70,7 @@ export const RemoveBgSidebar = ({
         description="Remove background from image using AI"
       />
 
-      {/* Unavailable Service Message Displayed when Sidebar Opens */}
+     
       <UnavailableService
         title="Service Unavailable"
         message="Background removal is temporarily unavailable. We're working on it and will be back soon."
