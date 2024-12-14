@@ -3,6 +3,32 @@ import { ITextboxOptions } from 'fabric/fabric-impl';
 
 import * as material from 'material-colors';
 
+export const filters = [
+  'None',
+  'Polaroid',
+  'Sepia',
+  'Kodachrome',
+  'Contrast',
+  'Brightness',
+  'Greyscale',
+  'Brownie',
+  'Vintage',
+  'Technicolor',
+  'Pixelate',
+  'Invert',
+  'Blur',
+  'Sharpen',
+  'Emboss',
+  'Removecolor',
+  'Blacknwhite',
+  'Vibrance',
+  'Blendcolor',
+  'Huerotate',
+  'Resize',
+  'Saturation',
+  'Gamma',
+];
+
 export const fonts = [
   'Arial',
   'Arial Black',
@@ -94,6 +120,7 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
+  changeImageFilter: (value: string) => void;
   addImage: (value: string) => void;
   delete: () => void;
   getActiveFontSize: () => number;
