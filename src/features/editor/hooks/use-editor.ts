@@ -25,9 +25,13 @@ import {
 } from '../types';
 import { useCanvasEvents } from './use-canvas-events';
 import { isTextType } from '../utils';
-import { createFilter } from '@/lib/utils';
+import { createFilter, downloadFile, transformText } from '@/lib/utils';
 import { useClipboard } from './use-clipboard';
 import { useHistory } from './use-history';
+import { useHotkeys } from './use-hotkeys';
+import { useWindowEvents } from './use-window-events';
+
+import { jsPDF } from 'jspdf';
 
 const buildEditor = ({
   canUndo,
@@ -51,6 +55,95 @@ const buildEditor = ({
   fontFamily,
   setFontFamily,
 }: BuildEditorProps): Editor => {
+  const generateSaveOptions = () => {
+    const { width, height, left, top } = getWorkSpace() as fabric.Rect;
+    return {
+      name: 'Image',
+      format: 'png',
+      quality: 1,
+      width,
+      height,
+      left,
+      top,
+    };
+  };
+
+  const savePdf = () => {
+    const options = generateSaveOptions();
+  
+    const widthInMm = (options.width ?? 1200) * 25.4 / 96;  // Convert width from px to mm
+    const heightInMm = (options.height ?? 900) * 25.4 / 96; // Convert height from px to mm
+  
+    const doc = new jsPDF({
+      orientation: widthInMm > heightInMm ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: [widthInMm, heightInMm],
+    });
+  
+    canvas?.setViewportTransform([1, 0, 0, 1, 0, 0]);
+  
+    const dataUrl = canvas?.toDataURL(options);
+  
+    // Set x, y to 0 and width, height to match the PDF size
+    doc.addImage(dataUrl, 'PNG', 0, 0, widthInMm, heightInMm);
+  
+    doc.save('canvas-export.pdf');
+  
+    autoZoom();
+  };
+  
+  
+
+  const savePng = () => {
+    const options = generateSaveOptions();
+
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+    const dataUrl = canvas.toDataURL(options);
+
+    downloadFile(dataUrl, 'png');
+    autoZoom();
+  };
+
+  const saveSvg = () => {
+    const options = generateSaveOptions();
+
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+    const dataUrl = canvas.toDataURL(options);
+
+    downloadFile(dataUrl, 'svg');
+    autoZoom();
+  };
+  const saveJpeg = () => {
+    const options = generateSaveOptions();
+
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+    const dataUrl = canvas.toDataURL(options);
+
+    downloadFile(dataUrl, 'jpeg');
+    autoZoom();
+  };
+  const saveJson = async () => {
+    const dataUrl = canvas.toJSON(JSON_KEYS);
+
+    // making the text compatible for the canvas
+
+    await transformText(dataUrl.objects);
+
+    const fileString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(dataUrl, null, '\t'),
+    )}`;
+
+    downloadFile(fileString, 'json');
+  };
+
+  const loadJson = (json: string) => {
+    const data = JSON.parse(json);
+
+    canvas.loadFromJSON(data, () => {
+      autoZoom();
+    });
+  };
+
   const getWorkSpace = () => {
     return canvas.getObjects().find((object) => object.name === 'clip');
   };
@@ -71,10 +164,16 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
+    savePng,
+    saveJpeg,
+    saveJson,
+    saveSvg,
+    loadJson,
     autoZoom,
     canUndo,
     canRedo,
-    
+    savePdf,
+
     zoomIn: () => {
       let zoomRatio = canvas.getZoom();
       zoomRatio += 0.05;
@@ -118,7 +217,6 @@ const buildEditor = ({
       canvas.isDrawingMode = false;
     },
 
-    
     onUndo: () => undo(),
     onRedo: () => redo(),
     onCopy: () => copy(),
@@ -560,6 +658,8 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
   const [strokeDashArray, setStrokeDashArray] =
     useState<number[]>(STROKE_DASH_ARRAY);
 
+  useWindowEvents(); // for faatlu shoshebaazi xd
+
   const { save, canUndo, canRedo, undo, redo, canvasHistory, setHistoryIndex } =
     useHistory({
       canvas,
@@ -577,6 +677,15 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
     canvas,
     setSelectedObjects,
     clearSelectionCallback,
+  });
+
+  useHotkeys({
+    undo,
+    redo,
+    copy,
+    paste,
+    save,
+    canvas,
   });
   const editor = useMemo(() => {
     if (canvas) {

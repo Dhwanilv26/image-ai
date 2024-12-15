@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { Button } from '@/components/ui/button';
 import { Logo } from './logo';
@@ -5,6 +6,9 @@ import { CiFileOn } from 'react-icons/ci';
 import { Hint } from '@/components/hint';
 import { ActiveTool, Editor } from '../types';
 import { cn } from '@/lib/utils';
+
+import { useFilePicker } from 'use-file-picker';
+
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -31,6 +35,21 @@ export const Navbar = ({
   activeTool,
   onChangeActiveTool,
 }: NavbarProps) => {
+  const { openFilePicker } = useFilePicker({
+    accept: '.json',
+    onFilesSuccessfullySelected: ({ plainFiles }: any) => {
+      if (plainFiles && plainFiles.length > 0) {
+        const file = plainFiles[0];
+        const reader = new FileReader();
+
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = () => {
+          editor?.loadJson(reader.result as string);
+        };
+      }
+    },
+  });
+
   return (
     <nav className="w-full flex items-center p-4 h-[68px] gap-x-8 border-b lg:pl-[34px]">
       <Logo />
@@ -45,8 +64,7 @@ export const Navbar = ({
           <DropdownMenuContent align="start" className="min-w-60">
             <DropdownMenuItem
               className="flex items-center gap-x-2"
-              onClick={() => {}}
-              // TODO : add onclick functionality
+              onClick={() => openFilePicker()}
             >
               <CiFileOn className="size-8" />
               <div>
@@ -71,7 +89,6 @@ export const Navbar = ({
             // todo : add dynamic classname
           >
             <MousePointerClick className="size-4" />
-            {/* to switch b/w various modes like draw insert edit etc */}
           </Button>
         </Hint>
 
@@ -115,7 +132,7 @@ export const Navbar = ({
           <DropdownMenuContent align="end" className="min-w-60">
             <DropdownMenuItem
               className="flex items-center gap-x-2"
-              onClick={() => {}}
+              onClick={() => editor?.saveJson()}
             >
               <CiFileOn className="size-8" />
               <div>
@@ -127,7 +144,7 @@ export const Navbar = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-x-2"
-              onClick={() => {}}
+              onClick={() => editor?.savePng()}
             >
               <CiFileOn className="size-8" />
               <div>
@@ -139,7 +156,7 @@ export const Navbar = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-x-2"
-              onClick={() => {}}
+              onClick={() => editor?.saveJpeg()}
             >
               <CiFileOn className="size-8" />
               <div>
@@ -151,13 +168,27 @@ export const Navbar = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-x-2"
-              onClick={() => {}}
+              onClick={() => editor?.saveSvg()}
             >
               <CiFileOn className="size-8" />
               <div>
                 <p>SVG</p>
                 <p className="text-xs text-muted-foreground">
                   Best for editing in vector softwares
+                </p>
+              </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className="flex items-center gap-x-2"
+              onClick={() => editor?.savePdf()}
+            >
+              {/* Replace with PDF icon */}
+              <CiFileOn className="size-8" />
+              <div>
+                <p>PDF</p>
+                <p className="text-xs text-muted-foreground">
+                  Best for sharing and printing
                 </p>
               </div>
             </DropdownMenuItem>

@@ -139,6 +139,12 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
+  savePng: () => void;
+  saveSvg: () => void;
+  saveJpeg: () => void;
+  saveJson: () => void;
+  savePdf: () => void;
+  loadJson: (json: string) => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: () => boolean;
