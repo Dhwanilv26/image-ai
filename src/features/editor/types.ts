@@ -123,6 +123,9 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
+  autoZoom:()=>void;
+  zoomIn:()=>void;
+  zoomOut:()=>void;
   getWorkSpace: () => fabric.Object | undefined;
   changeSize: (value: { width: number; height: number }) => void;
   changeBackground: (value: string) => void; // value is color

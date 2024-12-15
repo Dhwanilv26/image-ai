@@ -24,7 +24,6 @@ import {
 } from '../types';
 import { useCanvasEvents } from './use-canvas-events';
 import { isTextType } from '../utils';
-import { ITextboxOptions } from 'fabric/fabric-impl';
 import { createFilter } from '@/lib/utils';
 import { useClipboard } from './use-clipboard';
 
@@ -65,15 +64,27 @@ const buildEditor = ({
     canvas.setActiveObject(object);
   };
   return {
-  getWorkSpace,
+    autoZoom,
+    zoomIn: () => {
+      let zoomRatio = canvas.getZoom();
+      zoomRatio += 0.05;
+      const center = canvas.getCenter();
+      canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoomRatio>1 ? 1: zoomRatio);
+    },
+    zoomOut: () => {
+      let zoomRatio = canvas.getZoom();
+      zoomRatio -= 0.05;
+      const center = canvas.getCenter();
+      canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoomRatio<0.2? 0.2:zoomRatio);
+    },
+    getWorkSpace,
     changeSize: (value: { width: number; height: number }) => {
       const workspace = getWorkSpace();
-
       workspace?.set(value);
       autoZoom();
       // todo :Save
     },
-    changeBackground: (value:string) => {
+    changeBackground: (value: string) => {
       const workspace = getWorkSpace();
       workspace?.set({ fill: value });
       canvas.renderAll();
