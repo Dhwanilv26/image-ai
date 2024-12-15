@@ -3,6 +3,17 @@ import { ITextboxOptions } from 'fabric/fabric-impl';
 
 import * as material from 'material-colors';
 
+export const JSON_KEYS = [
+  'name',
+  'gradientAngle',
+  'selectable',
+  'hasControls',
+  'linkData',
+  'editable',
+  'extensionType',
+  'extension',
+];
+
 export const filters = [
   'None',
   'Polaroid',
@@ -102,6 +113,11 @@ export interface EditorHookProps {
 }
 
 export type BuildEditorProps = {
+  undo: () => void;
+  redo: () => void;
+  save: (skip?: boolean) => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
   autoZoom: () => void;
   copy: () => void;
   paste: () => void;
@@ -123,9 +139,13 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
-  autoZoom:()=>void;
-  zoomIn:()=>void;
-  zoomOut:()=>void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  autoZoom: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
   getWorkSpace: () => fabric.Object | undefined;
   changeSize: (value: { width: number; height: number }) => void;
   changeBackground: (value: string) => void; // value is color
