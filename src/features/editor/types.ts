@@ -102,6 +102,7 @@ export interface EditorHookProps {
 }
 
 export type BuildEditorProps = {
+  autoZoom: () => void;
   copy: () => void;
   paste: () => void;
   canvas: fabric.Canvas;
@@ -122,6 +123,9 @@ export type BuildEditorProps = {
 
 // these are the getter and setter methods used in the editor for different properties implemented
 export interface Editor {
+  getWorkSpace: () => fabric.Object | undefined;
+  changeSize: (value: { width: number; height: number }) => void;
+  changeBackground: (value: string) => void; // value is color
   enableDrawingMode: () => void;
   disableDrawingMode: () => void;
   onCopy: () => void;
