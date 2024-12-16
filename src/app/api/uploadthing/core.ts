@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import {auth} from "@/auth"
@@ -14,7 +15,7 @@ export const ourFileRouter = {
 
     // TODO : replace this wiht next auth
       const session = await auth();
-
+ 
       if (!session) throw new UploadThingError("Unauthorized");
 
       return { userId: session.user?.id };

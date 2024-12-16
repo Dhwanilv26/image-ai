@@ -6,6 +6,9 @@ import { Toaster } from '@/components/ui/sonner';
 
 import { Providers } from '@/components/providers';
 
+import { SessionProvider } from 'next-auth/react';
+import { auth } from '@/auth';
+
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
   variable: '--font-geist-sans',
@@ -25,21 +28,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>
-          <Toaster/>
-          {children}
+    <SessionProvider session={session}>
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <Providers>
+            <Toaster />
+            {children}
           </Providers>
-      </body>
-    </html>
+        </body>
+      </html>
+    </SessionProvider>
   );
 }
