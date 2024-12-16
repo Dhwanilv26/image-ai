@@ -1,8 +1,9 @@
 import Head from 'next/head';
 import { auth } from '@/auth';
+import { protectServer } from '@/features/auth/utils';
 export default async function Home() {
 
-  const session=await auth();
+  await protectServer();
   return (
     <>
           <Head>
@@ -10,7 +11,7 @@ export default async function Home() {
       </Head>
 
      <div className="min-h-screen flex items-center justify-center">
-     {JSON.stringify(session)}
+     You are logged in
     </div>
     </>
    
