@@ -1,6 +1,8 @@
 import Head from 'next/head';
+import { auth } from '@/auth';
+export default async function Home() {
 
-export default function Home() {
+  const session=await auth();
   return (
     <>
           <Head>
@@ -8,7 +10,7 @@ export default function Home() {
       </Head>
 
      <div className="min-h-screen flex items-center justify-center">
-      Home Page
+     {JSON.stringify(session)}
     </div>
     </>
    
