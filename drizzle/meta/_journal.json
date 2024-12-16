@@ -8,6 +8,13 @@
       "when": 1734332112033,
       "tag": "0000_quiet_black_bolt",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1734359612330,
+      "tag": "0001_brainy_triathlon",
+      "breakpoints": true
     }
   ]
 }

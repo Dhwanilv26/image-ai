@@ -16,6 +16,8 @@ import {
     email: text("email").unique(),
     emailVerified: timestamp("emailVerified", { mode: "date" }),
     image: text("image"),
+    password:text("password")
+    // stores not the actual password, but the hashed password
   })
    
   export const accounts = pgTable(

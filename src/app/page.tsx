@@ -1,9 +1,13 @@
 import Head from 'next/head';
 import { auth } from '@/auth';
 import { protectServer } from '@/features/auth/utils';
+// credential login always expects json web tokens to grant sessions
 export default async function Home() {
 
   await protectServer();
+
+  const session=await auth();
+
   return (
     <>
           <Head>
@@ -11,7 +15,7 @@ export default async function Home() {
       </Head>
 
      <div className="min-h-screen flex items-center justify-center">
-     You are logged in
+    {JSON.stringify(session)};
     </div>
     </>
    
