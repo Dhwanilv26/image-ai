@@ -123,7 +123,7 @@ export const SignUpCard = () => {
         <p className="text-xs text-muted-foreground">
           Already have an account?
           <Link href="/sign-in" className="text-sky-700 hover:underline">
-            <span>Sign In</span>
+            <span>Log In</span>
           </Link>
         </p>
       </CardContent>
