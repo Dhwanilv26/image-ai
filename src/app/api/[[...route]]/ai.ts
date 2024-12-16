@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { verifyAuth } from '@hono/auth-js';
 
 const HUGGINGFACE_GENERATE_URL =
   'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-3.5-large';
@@ -19,6 +20,7 @@ const app = new Hono()
   // Endpoint: Remove Background
   .post(
     '/remove-bg',
+    verifyAuth(),
     zValidator(
       'json',
       z.object({
@@ -71,6 +73,7 @@ const app = new Hono()
 
   .post(
     '/generate-image',
+    verifyAuth(),
     zValidator(
       'json',
       z.object({
