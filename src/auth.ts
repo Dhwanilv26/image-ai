@@ -1,6 +1,11 @@
 import NextAuth from 'next-auth';
-import GitHub from "next-auth/providers/github"
+import GitHub from 'next-auth/providers/github';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+
+import { db } from './db/drizzle';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [GitHub], // reads the github id and github secret from the .env file
+  adapter: DrizzleAdapter(db),
+  providers: [GitHub], 
 });
+ 
