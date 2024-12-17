@@ -7,6 +7,44 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 
 const app = new Hono()
+  .patch(
+    '/:id',
+    verifyAuth(),
+    zValidator('param', z.object({ id: z.string() })),
+    zValidator(
+      'json',
+      projectsInsertSchema
+        .omit({
+          id: true,
+          userId: true,
+          createdAt: true,
+          updatedAt: true,
+        })
+        .partial(),
+    ),
+    async (c) => {
+      const auth = c.get('authUser');
+      const { id } = c.req.valid('param');
+
+      const values = c.req.valid('json');
+
+      if (!auth.token?.id) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
+
+      const data = await db
+        .update(projects)
+        .set({ ...values, updatedAt: new Date() })
+        .where(and(eq(projects.id, id), eq(projects.userId, auth.token.id)))
+        .returning();
+
+      if (data.length === 0) {
+        return c.json({ error: 'unauthorized' }, 401);
+      }
+
+      return c.json({ data: data[0] });
+    },
+  )
   .get(
     '/:id',
     verifyAuth(),
@@ -27,7 +65,7 @@ const app = new Hono()
         // selecting the projects equal to the project id in the url and the authors id of that project should be the same which auth js gave it while login
         .where(and(eq(projects.id, id), eq(projects.userId, auth.token.id)));
 
-      if (data?.length === 0) {
+      if (data.length === 0) {
         return c.json({ error: 'not found' }, 404);
       }
 

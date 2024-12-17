@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { useEditor } from '../hooks/use-editor';
@@ -22,11 +23,23 @@ import { RemoveBgSidebar } from './remove-bg-sidebar';
 import { DrawSidebar } from './draw-sidebar';
 import { SettingsSidebar } from './settings-sidebar';
 import { ResponseType } from '@/features/projects/api/use-get-project';
+import { useUpdateProject } from '@/features/projects/api/use-update-project';
 
-interface EditorProps{
-  initialData:ResponseType['data']
+import debounce from 'lodash.debounce';
+
+interface EditorProps {
+  initialData: ResponseType['data'];
 }
-export const Editor = ({initialData}:EditorProps) => {
+export const Editor = ({ initialData }: EditorProps) => {
+  const { mutate } = useUpdateProject(initialData.id);
+
+  const debouncedSave = useCallback(
+    debounce((values: { json: string; height: number; width: number }) => {
+      // todo :add debounce
+      mutate(values);
+    }, 500),
+    [mutate],
+  );
   const [activeTool, setActiveTool] = useState<ActiveTool>('select');
 
   const onClearSelection = useCallback(() => {
@@ -36,7 +49,11 @@ export const Editor = ({initialData}:EditorProps) => {
   }, [activeTool]);
 
   const { init, editor } = useEditor({
+    defaultState: initialData.json,
+    defaultWidth: initialData.width,
+    defaultHeight: initialData.height,
     clearSelectionCallback: onClearSelection,
+    saveCallback: debouncedSave,
   });
 
   const onChangeActiveTool = useCallback(
@@ -76,10 +93,12 @@ export const Editor = ({initialData}:EditorProps) => {
   // sif init change hua to hi re render.. and usecallback mtlb no rendering bcz init is cached over there
   return (
     <div className="h-full flex flex-col ">
-      <Navbar 
-      editor={editor}
-      activeTool={activeTool}
-      onChangeActiveTool={onChangeActiveTool} />
+      <Navbar
+        id={initialData.id}
+        editor={editor}
+        activeTool={activeTool}
+        onChangeActiveTool={onChangeActiveTool}
+      />
       <div className="absolute h-[calc(100%-68px)] w-full top-[68px] flex">
         {/* using this div to prevent overflow and constant flickering issues */}
 
@@ -149,12 +168,12 @@ export const Editor = ({initialData}:EditorProps) => {
           activeTool={activeTool}
           onChangeActiveTool={onChangeActiveTool}
         />
-         <DrawSidebar
+        <DrawSidebar
           editor={editor}
           activeTool={activeTool}
           onChangeActiveTool={onChangeActiveTool}
         />
-         <SettingsSidebar
+        <SettingsSidebar
           editor={editor}
           activeTool={activeTool}
           onChangeActiveTool={onChangeActiveTool}
@@ -174,7 +193,7 @@ export const Editor = ({initialData}:EditorProps) => {
             <canvas ref={canvasRef} />
           </div>
 
-          <Footer  editor={editor}/>
+          <Footer editor={editor} />
         </main>
       </div>
     </div>

@@ -4,9 +4,14 @@ import { fabric } from 'fabric';
 import { JSON_KEYS } from '../types';
 interface useHistoryProps {
   canvas: fabric.Canvas | null;
+  saveCallback?: (values: {
+    json: string;
+    height: number;
+    width: number;
+  }) => void;
 }
 
-export const useHistory = ({ canvas }: useHistoryProps) => {
+export const useHistory = ({ canvas, saveCallback }: useHistoryProps) => {
   const [historyIndex, setHistoryIndex] = useState(0);
 
   const canvasHistory = useRef<string[]>([]); // useref used to prevent constant reloading like in usestate.. this is not gonna directly render the things..
@@ -36,9 +41,17 @@ export const useHistory = ({ canvas }: useHistoryProps) => {
         setHistoryIndex(canvasHistory.current.length - 1);
       }
 
-      // todo : save callback (save to the database in via autosave in realtime )
+      const workspace = canvas
+        .getObjects()
+        .find((object) => object.name === 'clip');
+
+      const height = workspace?.height || 0;
+      const width = workspace?.width || 0;
+
+      saveCallback?.({ json, height, width });
+      // function hi hai bas undefined na ho isiliye chain kiya hai
     },
-    [canvas],
+    [canvas, saveCallback],
   );
 
   const undo = useCallback(() => {

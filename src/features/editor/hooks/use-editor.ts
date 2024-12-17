@@ -3,7 +3,7 @@
 // creating a hook to use the editor
 // usecallback caches the interactions allowing less re rendering
 import { fabric } from 'fabric';
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useRef } from 'react';
 import { useAutoResize } from './use-auto-resize';
 import {
   BuildEditorProps,
@@ -32,6 +32,7 @@ import { useHotkeys } from './use-hotkeys';
 import { useWindowEvents } from './use-window-events';
 
 import { jsPDF } from 'jspdf';
+import { useLoadState } from './use-load-state';
 
 const buildEditor = ({
   canUndo,
@@ -70,29 +71,27 @@ const buildEditor = ({
 
   const savePdf = () => {
     const options = generateSaveOptions();
-  
-    const widthInMm = (options.width ?? 1200) * 25.4 / 96;  // Convert width from px to mm
-    const heightInMm = (options.height ?? 900) * 25.4 / 96; // Convert height from px to mm
-  
+
+    const widthInMm = ((options.width ?? 1200) * 25.4) / 96; // Convert width from px to mm
+    const heightInMm = ((options.height ?? 900) * 25.4) / 96; // Convert height from px to mm
+
     const doc = new jsPDF({
       orientation: widthInMm > heightInMm ? 'landscape' : 'portrait',
       unit: 'mm',
       format: [widthInMm, heightInMm],
     });
-  
+
     canvas?.setViewportTransform([1, 0, 0, 1, 0, 0]);
-  
+
     const dataUrl = canvas?.toDataURL(options);
-  
+
     // Set x, y to 0 and width, height to match the PDF size
     doc.addImage(dataUrl, 'PNG', 0, 0, widthInMm, heightInMm);
-  
+
     doc.save('canvas-export.pdf');
-  
+
     autoZoom();
   };
-  
-  
 
   const savePng = () => {
     const options = generateSaveOptions();
@@ -645,7 +644,18 @@ const buildEditor = ({
   };
 };
 
-export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
+export const useEditor = ({
+  defaultState,
+  defaultWidth,
+  defaultHeight,
+  clearSelectionCallback,
+  saveCallback,
+}: EditorHookProps) => {
+  const initialState = useRef(defaultState);
+  const initialWidth = useRef(defaultWidth);
+  const initialHeight = useRef(defaultHeight);
+  // using useref to control when to send this all to the database.. as these values update evrytime .. a must use useref
+
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   // selectedobjects is not needed
@@ -663,6 +673,7 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
   const { save, canUndo, canRedo, undo, redo, canvasHistory, setHistoryIndex } =
     useHistory({
       canvas,
+      saveCallback,
     });
 
   const { copy, paste } = useClipboard({ canvas });
@@ -686,6 +697,14 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
     paste,
     save,
     canvas,
+  });
+
+  useLoadState({
+    canvas,
+    autoZoom,
+    initialState,
+    canvasHistory,
+    setHistoryIndex,
   });
   const editor = useMemo(() => {
     if (canvas) {
@@ -750,8 +769,10 @@ export const useEditor = ({ clearSelectionCallback }: EditorHookProps) => {
         cornerStrokeColor: '#3b83f6',
       });
       const initialWorkSpace = new fabric.Rect({
-        width: 900,
-        height: 1200,
+        // we can even preserve the resolution for our project.. fuckk
+
+        width: initialWidth.current,
+        height: initialHeight.current,
         name: 'clip',
         fill: 'white',
         selectable: false,

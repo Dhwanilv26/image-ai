@@ -75,8 +75,8 @@ export const SettingsSidebar = ({
       />
 
       <ScrollArea>
-        <form className="space-y-4 p-2" onSubmit={onSubmit}>
-          <div className="space-y-4">
+        <form className="space-y-4 p-4" onSubmit={onSubmit}>
+          <div className="space-y-2">
             <Label>Height</Label>
             <Input
               placeholder="Height"

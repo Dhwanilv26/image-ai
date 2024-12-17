@@ -13,6 +13,8 @@ interface EditorProjectIdPageProps {
 const EditorProjectIdPage = ({ params }: EditorProjectIdPageProps) => {
   // only signedin users can access the editor
 
+  
+
   const { data, isLoading, isError } = useGetProject(params.projectId);
 
   if (isLoading || !data) {
