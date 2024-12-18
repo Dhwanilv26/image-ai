@@ -79,7 +79,7 @@ export const ProjectsSection = () => {
     );
   }
 
-  if (!data.pages.length) {
+  if (!data.pages.length || !data.pages[0].data.length) {
     return (
       <div className="space-y-4">
         <h3 className="font-semibold text-lg">Recent Projects</h3>
@@ -140,11 +140,11 @@ export const ProjectsSection = () => {
                           Make a copy
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="h-10 cursor-pointer"
+                          className="h-10 cursor-pointer text-red-500"
                           disabled={removeMutation.isPending}
                           onClick={() => onDelete(project.id)}
                         >
-                          <TrashIcon className="size-4 mr-2" />
+                          <TrashIcon className="size-4 mr-2 text-red-500" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
