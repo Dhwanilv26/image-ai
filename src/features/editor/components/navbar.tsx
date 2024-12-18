@@ -31,7 +31,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FaDrawPolygon, FaFileImage, FaRegFileImage, FaVectorSquare } from "react-icons/fa6";
+import { FaFileImage, FaRegFileImage, FaVectorSquare } from "react-icons/fa6";
 
 interface NavbarProps {
   id: string;

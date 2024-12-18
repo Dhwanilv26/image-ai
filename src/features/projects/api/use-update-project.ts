@@ -34,6 +34,8 @@ export const useUpdateProject = (id: string) => {
       //Invalidate the query to ensure the UI fetches and displays the latest project data after the mutation, maintaining consistency between client and server
       // voh query stale ho jaayega, fresh query generate hoga with latest and correct data
       // (ofc on success only)
+
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: () => {
       toast.error('Failed to update project', {

@@ -1,12 +1,45 @@
 import { db } from '@/db/drizzle';
 import { projects, projectsInsertSchema } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { verifyAuth } from '@hono/auth-js';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
 const app = new Hono()
+.get(
+  "/",
+  verifyAuth(),
+  zValidator(
+    "query",
+    z.object({
+      page:z.coerce.number(),
+      limit:z.coerce.number(),
+    }),
+
+  ),
+async (c) => {
+  const auth=c.get("authUser");
+  const {page,limit}=c.req.valid("query");
+
+  if(!auth.token?.id){
+    return c.json({error:'authorized'},401);
+  }
+
+  const data=await db.
+  select().
+  from(projects)
+  .where((eq(projects.userId,auth.token.id)))
+  .limit(limit)
+  .offset((page-1)*limit)
+  .orderBy(desc(projects.updatedAt))
+
+  return c.json({
+    data,
+    nextPage: data.length === limit ? page + 1 : null,
+  });
+}
+)
   .patch(
     '/:id',
     verifyAuth(),
