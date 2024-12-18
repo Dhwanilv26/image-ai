@@ -23,11 +23,18 @@ import {
 
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { useDuplicateProject } from '@/features/projects/use-duplicate-project';
 
 export const ProjectsSection = () => {
   const router = useRouter();
   const { data, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useGetProjects();
+
+  const duplicateMutation = useDuplicateProject();
+
+  const onCopy = (id: string) => {
+    duplicateMutation.mutate({ id });
+  };
 
   if (status === 'pending') {
     return (
@@ -109,8 +116,8 @@ export const ProjectsSection = () => {
                         <DropdownMenuItem
                           className="h-10 cursor-pointer 
                             "
-                          disabled={false}
-                          onClick={() => {}}
+                          disabled={duplicateMutation.isPending}
+                          onClick={() => onCopy(project.id)}
                         >
                           <CopyIcon className="size-4 mr-2" />
                           Make a copy
