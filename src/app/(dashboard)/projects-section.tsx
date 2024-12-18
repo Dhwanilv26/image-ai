@@ -24,13 +24,29 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useDuplicateProject } from '@/features/projects/use-duplicate-project';
+import { useDeleteProject } from '@/features/projects/api/use-delete-project';
+import { useConfirm } from '@/hooks/use-confirm';
 
 export const ProjectsSection = () => {
+  const [ConfirmationDialog, confirm] = useConfirm(
+    'Are you sure ?',
+    'You are about to delete this project',
+  );
   const router = useRouter();
   const { data, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useGetProjects();
 
   const duplicateMutation = useDuplicateProject();
+
+  const removeMutation = useDeleteProject();
+
+  const onDelete = async (id: string) => {
+    const ok = await confirm();
+
+    if (ok) {
+      removeMutation.mutate({ id });
+    }
+  };
 
   const onCopy = (id: string) => {
     duplicateMutation.mutate({ id });
@@ -78,6 +94,7 @@ export const ProjectsSection = () => {
 
   return (
     <div className="space-y-4">
+      <ConfirmationDialog />
       <h3 className="font-semibold text-lg">Recent Projects</h3>
 
       <Table>
@@ -124,8 +141,8 @@ export const ProjectsSection = () => {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="h-10 cursor-pointer"
-                          disabled={false}
-                          onClick={() => {}}
+                          disabled={removeMutation.isPending}
+                          onClick={() => onDelete(project.id)}
                         >
                           <TrashIcon className="size-4 mr-2" />
                           Delete
