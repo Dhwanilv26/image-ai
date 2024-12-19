@@ -111,7 +111,7 @@ const app = new Hono()
       const { page, limit } = c.req.valid('query');
 
       if (!auth.token?.id) {
-        return c.json({ error: 'authorized' }, 401);
+        return c.json({ error: 'unauthorized' }, 401);
       }
 
       const data = await db

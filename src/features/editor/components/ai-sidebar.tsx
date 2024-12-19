@@ -10,6 +10,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useGenerateImage } from '@/features/ai/api/use-generate-image';
+
+import { usePayawall } from '@/features/subscriptions/hooks/use-paywall';
 interface AiSidebarProps {
   editor: Editor | undefined;
   activeTool: ActiveTool;
@@ -23,10 +25,17 @@ export const AiSidebar = ({
 }: AiSidebarProps) => {
   const mutation = useGenerateImage();
 
+  const {shouldBlock,triggerPaywall}=usePayawall();
+
   const [value, setValue] = useState('');
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if(shouldBlock){
+      triggerPaywall();
+      return;
+    }
 
     mutation
       .mutateAsync({ prompt: value })
@@ -48,7 +57,6 @@ export const AiSidebar = ({
     onChangeActiveTool('select');
   };
 
-  // activetool fill hua to hi render hoga varna nahi
   return (
     <aside
       className={cn(
