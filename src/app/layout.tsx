@@ -9,6 +9,7 @@ import { Providers } from '@/components/providers';
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/auth';
 import { Modals } from '@/components/modals';
+import { SubscriptionAlert } from '@/features/subscriptions/components/subscription-alert';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -44,6 +45,7 @@ export default async function RootLayout({
           <Providers>
             <Toaster />
             <Modals/>
+            <SubscriptionAlert/>
             {children}
           </Providers>
         </body>

@@ -8,6 +8,7 @@ import ai from './ai';
 import images from './images';
 import users from './users';
 import projects from './projects';
+import subscriptions from './subscriptions'
 
 import authConfig from '@/auth.config';
 
@@ -27,6 +28,7 @@ const app = new Hono().basePath('/api');
 app.use('*', initAuthConfig(getAuthConfig));
 
 const routes = app
+.route("/subscriptions",subscriptions)
   .route('/ai', ai)
   .route('/users', users)
   .route('/images', images)
