@@ -1,8 +1,12 @@
 {
-    "build": {
-      "env": {
-        "TS_NODE_IGNORE_ERRORS": "true"
-      }
+  "functions": {
+    "src/features/images/api/use-get-images.ts": {
+      "maxDuration": 120
+    }
+  },
+  "build": {
+    "env": {
+      "TS_NODE_IGNORE_ERRORS": "true"
     }
   }
-  
+}
