@@ -5,13 +5,18 @@ import { useGetProject } from '@/features/projects/api/use-get-project';
 import { Loader, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 
+// EditorProjectIdPageProps is no longer needed here
+// Use Next.js' `NextPage` type directly for pages
+import { NextPage } from 'next';
+
 interface EditorProjectIdPageProps {
   params: {
     projectId: string;
   };
 }
 
-const EditorProjectIdPage = ({ params }: EditorProjectIdPageProps) => {
+// Explicitly define the NextPage type and use the `params` type from dynamic routes
+const EditorProjectIdPage: NextPage<EditorProjectIdPageProps> = ({ params }) => {
   const { projectId } = params;  // Destructure projectId from params
   
   // Fetch project data using your custom hook
