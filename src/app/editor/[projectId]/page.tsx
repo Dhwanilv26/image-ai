@@ -10,12 +10,12 @@ interface EditorProjectIdPageProps {
     projectId: string;
   };
 }
+
 const EditorProjectIdPage = ({ params }: EditorProjectIdPageProps) => {
-  // only signedin users can access the editor
-
+  const { projectId } = params;  // Destructure projectId from params
   
-
-  const { data, isLoading, isError } = useGetProject(params.projectId);
+  // Fetch project data using your custom hook
+  const { data, isLoading, isError } = useGetProject(projectId);
 
   if (isLoading || !data) {
     return (
@@ -30,10 +30,10 @@ const EditorProjectIdPage = ({ params }: EditorProjectIdPageProps) => {
       </div>
     );
   }
+
   if (isError) {
     return (
       <div className="h-full flex flex-col items-center justify-center gap-y-5 px-4 text-center">
-        {/* Icon */}
         <div className="bg-red-100 p-4 rounded-full shadow-md">
           <TriangleAlert className="w-12 h-12 text-red-600" />
         </div>
