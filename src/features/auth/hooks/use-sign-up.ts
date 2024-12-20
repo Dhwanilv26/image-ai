@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { useMutation } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono';
 

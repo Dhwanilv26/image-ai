@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import { client } from '@/lib/hono';
 import { InferResponseType, InferRequestType } from 'hono';

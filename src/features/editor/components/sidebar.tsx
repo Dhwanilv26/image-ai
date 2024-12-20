@@ -15,7 +15,7 @@ import { SidebarItem } from "@/features/editor/components/sidebar-item";
 
 interface SidebarProps {
   activeTool: ActiveTool;
-  sionChangeActiveTool: (tool: ActiveTool) => void;
+  onChangeActiveTool: (tool: ActiveTool) => void;
 };
 
 export const Sidebar = ({
