@@ -1,6 +1,6 @@
 {
   "functions": {
-    "src/features/images/api/use-get-images.ts": {
+    "src/app/api/[...route]/ai.ts": {
       "maxDuration": 120
     }
   },
