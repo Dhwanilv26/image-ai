@@ -5,7 +5,6 @@ import { verifyAuth } from '@hono/auth-js';
 import { Hono } from 'hono';
 
 import { stripe } from '@/lib/stripe';
-
 import Stripe from 'stripe';
 import { db } from '@/db/drizzle';
 import { subscriptions } from '@/db/schema';
@@ -13,6 +12,8 @@ import { eq } from 'drizzle-orm';
 import { checkIsActive } from '@/features/subscriptions/lib';
 
 const app = new Hono()
+
+  // Endpoint to create a billing portal session
   .post('/billing', verifyAuth(), async (c) => {
     const auth = c.get('authUser');
 
@@ -40,6 +41,8 @@ const app = new Hono()
 
     return c.json({ data: session.url });
   })
+
+  // Endpoint to get the current subscription status
   .get('/current', verifyAuth(), async (c) => {
     const auth = c.get('authUser');
 
@@ -54,7 +57,6 @@ const app = new Hono()
 
     const active = checkIsActive(subscription);
 
-    // @ts-nocheck
     return c.json({
       data: {
         ...subscription,
@@ -62,10 +64,10 @@ const app = new Hono()
       },
     });
   })
+
+  // Endpoint to create a checkout session
   .post('/checkout', verifyAuth(), async (c) => {
     const auth = c.get('authUser');
-
-    // giving data accesss to db
 
     if (!auth.token?.id) {
       return c.json({ error: 'unauthorized' }, 401);
@@ -74,16 +76,17 @@ const app = new Hono()
     const session = await stripe.checkout.sessions.create({
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}?success=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}?canceled=1`,
-
       payment_method_types: ['card'],
       mode: 'subscription',
       billing_address_collection: 'required',
       customer_email: auth.token.email || '',
       line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       metadata: {
-        userId: auth.token.id,
+        userId: auth.token.id, // Ensure userId is set in metadata
       },
     });
+
+    console.log('🔹 Created checkout session metadata:', session.metadata);
 
     const url = session.url;
 
@@ -93,12 +96,12 @@ const app = new Hono()
 
     return c.json({ data: url });
   })
-  // we arent accessing this webhook , stripe is so no verifauth is needed here
+
+  // Webhook endpoint for Stripe events
   .post('/webhook', async (c) => {
     const body = await c.req.text();
     const signature = c.req.header('Stripe-Signature') as string;
 
-    // giving data acccess to stripe for authentication and payment procedure
     let event: Stripe.Event;
 
     try {
@@ -108,47 +111,89 @@ const app = new Hono()
         process.env.STRIPE_WEBHOOK_SECRET!,
       );
     } catch (error) {
+      console.error('❌ Invalid Stripe webhook signature:', error);
       return c.json({ error: 'invalid signature' }, 400);
     }
 
-    const session = event.data.object as Stripe.Checkout.Session;
-    // user purchases for the first time
+    console.log('🔔 Stripe webhook event received:', event.type);
+
+    // Handle checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
-      // subscription is created in the stripe platform
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      console.log('🔹 Checkout session metadata:', session.metadata);
+
+      if (!session?.metadata?.userId) {
+        console.error('❌ User ID is missing in session metadata');
+        return c.json({ error: 'Invalid session: userId missing' }, 400);
+      }
+
+      // Retrieve the subscription to update its metadata
       const subscription = await stripe.subscriptions.retrieve(
         session.subscription as string,
       );
 
-      if (!session?.metadata?.userId) {
-        // means that we are unaware of who has subscribed.. if not user then obviously cancel everything.. metadata mai user ka auth id diya hua hai so
-        return c.json({ error: 'invalid session' }, 400);
-      }
+      console.log('🔹 Subscription details:', subscription);
 
-      await db
-        .insert(subscriptions)
-        // @ts-expect-error idk
-        .values({
-          status: subscription.status,
-          userId: session.metadata.userId,
-          subscriptionId: subscription.id,
-          customerId: subscription.customer as string,
-          priceId: subscription.items.data[0].price.product,
-          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+      // Update the subscription metadata with the userId
+      await stripe.subscriptions.update(subscription.id, {
+        metadata: {
+          userId: session.metadata.userId, // Propagate userId to subscription metadata
+        },
+      });
+
+      console.log(
+        '✅ Subscription metadata updated with userId:',
+        session.metadata.userId,
+      );
+
+      // Insert the subscription into the database
+      await db.insert(subscriptions).values({
+        status: subscription.status,
+        userId: session.metadata.userId,
+        subscriptionId: subscription.id,
+        customerId: subscription.customer as string,
+        priceId: subscription.items.data[0].price.id,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      console.log('✅ Subscription created in database');
     }
 
+    // Handle invoice.payment_succeeded event
     if (event.type === 'invoice.payment_succeeded') {
-      // on extension of subscription changing the data to the database
-      const subscription = await stripe.subscriptions.retrieve(
-        session.subscription as string,
-      );
+      console.log('✅ Event received: invoice.payment_succeeded');
 
-      if (!session?.metadata?.userId) {
-        return c.json({ error: 'invalid session' }, 400);
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = invoice.subscription;
+
+      console.log('🔹 Invoice details:', invoice);
+      console.log('🔹 Subscription ID from invoice:', subscriptionId);
+
+      if (!subscriptionId) {
+        console.error('❌ Subscription ID is missing in invoice');
+        return c.json({ error: 'Subscription ID not found' }, 400);
       }
 
+      // Retrieve the subscription to get metadata
+      const subscription = await stripe.subscriptions.retrieve(
+        subscriptionId as string,
+      );
+
+      console.log('🔹 Subscription metadata:', subscription.metadata);
+
+      if (!subscription.metadata?.userId) {
+        console.error('❌ User ID is missing in subscription metadata');
+        return c.json({ error: 'Invalid session: userId missing' }, 400);
+      }
+
+      const userId = subscription.metadata.userId;
+
+      console.log('🔹 User ID from subscription metadata:', userId);
+
+      // Update the subscription in the database
       await db
         .update(subscriptions)
         .set({
@@ -156,9 +201,12 @@ const app = new Hono()
           currentPeriodEnd: new Date(subscription.current_period_end * 1000),
           updatedAt: new Date(),
         })
-        .where(eq(subscriptions.id, subscription.id));
+        .where(eq(subscriptions.userId, userId));
+
+      console.log('✅ Subscription updated in database');
     }
-    // webhooks need to receive a success event after doing anything to avoid webhook getting blocked
+
+    // Return a success response for the webhook
     return c.json(null, 200);
   });
 
