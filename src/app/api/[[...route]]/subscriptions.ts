@@ -14,73 +14,47 @@ import { checkIsActive } from '@/features/subscriptions/lib';
 
 const app = new Hono()
   .post('/billing', verifyAuth(), async (c) => {
-    console.log('🔹 [Billing] Request received');
     const auth = c.get('authUser');
 
-    console.log('🔹 [Billing] Auth User:', auth);
-
     if (!auth.token?.id) {
-      console.error('❌ [Billing] Unauthorized access - No auth token');
       return c.json({ error: 'unauthorized' }, 401);
     }
 
-    console.log('🔹 [Billing] Checking subscription for user:', auth.token.id);
     const [subscription] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.userId, auth.token.id));
 
     if (!subscription) {
-      console.error(
-        '❌ [Billing] No subscription found for user:',
-        auth.token.id,
-      );
       return c.json({ error: 'No subscription found' }, 404);
     }
-
-    console.log('✅ [Billing] Subscription found:', subscription);
 
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.customerId,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}`,
     });
 
-    console.log('✅ [Billing] Stripe Billing Portal Session created:', session);
-
     if (!session.url) {
-      console.error('❌ [Billing] Failed to create billing session');
       return c.json({ error: 'failed to create session' }, 400);
     }
 
     return c.json({ data: session.url });
   })
-
   .get('/current', verifyAuth(), async (c) => {
-    console.log('🔹 [Current Subscription] Request received');
     const auth = c.get('authUser');
 
-    console.log('🔹 [Current Subscription] Auth User:', auth);
-
     if (!auth.token?.id) {
-      console.error(
-        '❌ [Current Subscription] Unauthorized access - No auth token',
-      );
       return c.json({ error: 'unauthorized' }, 401);
     }
 
-    console.log(
-      '🔹 [Current Subscription] Checking subscription for user:',
-      auth.token.id,
-    );
     const [subscription] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.userId, auth.token.id));
 
-    console.log('✅ [Current Subscription] Subscription Data:', subscription);
-
     const active = checkIsActive(subscription);
 
+    // @ts-nocheck
     return c.json({
       data: {
         ...subscription,
@@ -88,51 +62,43 @@ const app = new Hono()
       },
     });
   })
-
   .post('/checkout', verifyAuth(), async (c) => {
-    console.log('🔹 [Checkout] Request received');
     const auth = c.get('authUser');
 
-    console.log('🔹 [Checkout] Auth User:', auth);
+    // giving data accesss to db
 
     if (!auth.token?.id) {
-      console.error('❌ [Checkout] Unauthorized access - No auth token');
       return c.json({ error: 'unauthorized' }, 401);
     }
-
-    console.log(
-      '🔹 [Checkout] Creating Stripe Checkout Session for user:',
-      auth.token.id,
-    );
 
     const session = await stripe.checkout.sessions.create({
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}?success=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}?canceled=1`,
+
       payment_method_types: ['card'],
       mode: 'subscription',
       billing_address_collection: 'required',
       customer_email: auth.token.email || '',
+      line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
       metadata: {
         userId: auth.token.id,
       },
     });
 
-    console.log('✅ [Checkout] Stripe Checkout Session created:', session);
+    const url = session.url;
 
-    if (!session.url) {
-      console.error('❌ [Checkout] Failed to create session');
+    if (!url) {
       return c.json({ error: 'failed to create session' }, 400);
     }
 
-    return c.json({ data: session.url });
+    return c.json({ data: url });
   })
-
+  // we arent accessing this webhook , stripe is so no verifauth is needed here
   .post('/webhook', async (c) => {
-    console.log('🔹 [Webhook] Received Stripe Event');
-
     const body = await c.req.text();
     const signature = c.req.header('Stripe-Signature') as string;
 
+    // giving data acccess to stripe for authentication and payment procedure
     let event: Stripe.Event;
 
     try {
@@ -141,64 +107,45 @@ const app = new Hono()
         signature,
         process.env.STRIPE_WEBHOOK_SECRET!,
       );
-      console.log('✅ [Webhook] Event Verified:', event.type);
     } catch (error) {
-      console.error('❌ [Webhook] Invalid Signature:', error);
       return c.json({ error: 'invalid signature' }, 400);
     }
 
-    console.log('🔹 [Webhook] Event Data:', event.data.object);
-
     const session = event.data.object as Stripe.Checkout.Session;
-
+    // user purchases for the first time
     if (event.type === 'checkout.session.completed') {
-      console.log(
-        '🔹 [Webhook] Checkout Session Completed - Retrieving Subscription',
-      );
-
+      // subscription is created in the stripe platform
       const subscription = await stripe.subscriptions.retrieve(
         session.subscription as string,
       );
 
-      console.log('✅ [Webhook] Subscription Retrieved:', subscription);
-
       if (!session?.metadata?.userId) {
-        console.error('❌ [Webhook] Invalid Session - No user ID in metadata');
+        // means that we are unaware of who has subscribed.. if not user then obviously cancel everything.. metadata mai user ka auth id diya hua hai so
         return c.json({ error: 'invalid session' }, 400);
       }
 
-      console.log(
-        '✅ [Webhook] Storing Subscription Data for User:',
-        session.metadata.userId,
-      );
-
-      await db.insert(subscriptions).values({
-        status: subscription.status,
-        userId: session.metadata.userId,
-        subscriptionId: subscription.id,
-        customerId: subscription.customer as string,
-        priceId: subscription.items.data[0].price.product,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      console.log('✅ [Webhook] Subscription Data Stored in DB');
+      await db
+        .insert(subscriptions)
+        // @ts-expect-error idk
+        .values({
+          status: subscription.status,
+          userId: session.metadata.userId,
+          subscriptionId: subscription.id,
+          customerId: subscription.customer as string,
+          priceId: subscription.items.data[0].price.product,
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
     }
 
     if (event.type === 'invoice.payment_succeeded') {
-      console.log(
-        '🔹 [Webhook] Invoice Payment Succeeded - Updating Subscription',
-      );
-
+      // on extension of subscription changing the data to the database
       const subscription = await stripe.subscriptions.retrieve(
         session.subscription as string,
       );
 
-      console.log('✅ [Webhook] Subscription Retrieved:', subscription);
-
       if (!session?.metadata?.userId) {
-        console.error('❌ [Webhook] Invalid Session - No user ID in metadata');
         return c.json({ error: 'invalid session' }, 400);
       }
 
@@ -210,10 +157,8 @@ const app = new Hono()
           updatedAt: new Date(),
         })
         .where(eq(subscriptions.id, subscription.id));
-
-      console.log('✅ [Webhook] Subscription Updated in DB');
     }
-
+    // webhooks need to receive a success event after doing anything to avoid webhook getting blocked
     return c.json(null, 200);
   });
 
